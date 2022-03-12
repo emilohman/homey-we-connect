@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script type="text/javascript" src="/homey.js" data-origin="settings"></script>
+</head>
+<body>
+<h1>Logs</h1>
+
+<textarea name="logs" id="logs" cols="50" rows="40"></textarea>
+
+<button id="refresh" class="right">Refresh</button>
+<button id="clear" class="right">Clear</button>
+
+<script type="text/javascript">
+  // a method named 'onHomeyReady' must be present in your code
+  function onHomeyReady(Homey) {
+    // Tell Homey we're ready to be displayed
+    Homey.ready();
+
+    var logsElement = document.getElementById("logs");
+    var refreshElement = document.getElementById("refresh");
+    var clearElement = document.getElementById("clear");
+
+    var fetchLogs = function() {
+      Homey.get("logger", function (err, log) {
+        if (err) return Homey.alert(err);
+
+        logsElement.value = JSON.parse(log).logs.map(l => {
+          return `${l.time} [${l.type}]: ${l.message}\n`;
+        });
+      });
+    };
+
+    fetchLogs();
+
+    refreshElement.addEventListener("click", function (e) {
+      fetchLogs();
+    });
+
+    clearElement.addEventListener("click", function (e) {
+      Homey.set("logger", JSON.stringify({ logs: [] }), function (err) {
+        if (err) return Homey.alert(err);
+      });
+    });
+  }
+</script>
+</body>
+</html>
